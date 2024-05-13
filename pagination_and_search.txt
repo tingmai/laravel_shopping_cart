@@ -1,0 +1,31 @@
+
+//frontend(view)
+
+<form action="{{route('products.search')}}" method="GET">
+@csrf 
+<input type="text" name="search_str">
+<button type="submit"> Search </button>
+</form>
+
+//route
+//web.php
+Route::get('search',[ProductController::class,'search'])->name('products.search');
+
+
+
+//controller
+
+public function search(Request $request){
+
+$str=$request->search_str;
+
+$products = Product::where('category', 'LIKE', '%' . $str. '%')
+        ->orWhere('name', 'LIKE', '%' . $str . '%')
+        ->paginate(6);
+$products->appends(['search' => $str]);
+
+return view('items.index',compact('products'));
+
+}
+
+
