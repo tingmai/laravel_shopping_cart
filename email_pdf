@@ -1,0 +1,130 @@
+
+Step 1: Install dompdf Package
+send email/pdf file
+
+composer require barryvdh/laravel-dompdf
+
+
+After successfully install package, open config/app.php file and add service provider and alias.
+
+config/app.php
+
+'providers' => [
+	....
+	Barryvdh\DomPDF\ServiceProvider::class,
+],
+  
+'aliases' => [
+	....
+	'PDF' => Barryvdh\DomPDF\Facade::class,
+]
+
+
+Step 2: Make Configuration
+
+
+.env
+---------
+
+MAIL_DRIVER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=mygoogle@gmail.com
+MAIL_PASSWORD=rrnnucvnqlbsl
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=mygoogle@gmail.com
+MAIL_FROM_NAME="${APP_NAME}"
+
+
+===================
+
+Step 3: Add Route
+
+In this is step we need to create routes for items listing. so open your "routes/web.php" file and add following route.
+
+routes/web.php
+
+<?php
+  
+use Illuminate\Support\Facades\Route;
+  
+use App\Http\Controllers\PDFController;
+  
+
+  
+Route::get('send-email-pdf', [PDFController::class, 'index']);
+
+
+==================================
+
+
+Step 4: Add Controller
+
+Here,we require to create new controller PDFController that will manage index method of route. So let's put bellow code.
+
+app/Http/Controllers/PDFController.php
+
+<?php
+  
+namespace App\Http\Controllers;
+  
+use PDF;
+use Mail;
+  
+class PDFController extends Controller
+{
+    /**
+     * Write code on Method
+     *
+     * @return response()
+     */
+    public function index()
+    {
+        $data["email"] = "admin@gmail.com";
+        $data["title"] = "From Northern City";
+        $data["body"] = "This is Demo";
+  
+        $pdf = PDF::loadView('emails.myTestMail', $data);
+  
+        Mail::send('emails.myTestMail', $data, function($message)use($data, $pdf) {
+            $message->to($data["email"], $data["email"])
+                    ->subject($data["title"])
+                    ->attachData($pdf->output(), "text.pdf");
+        });
+  
+        dd('Mail sent successfully');
+    }
+}
+
+================================
+Step 5: Create View File
+
+Create myTestMail.blade.php(resources/views/emails/myTestMail.blade.php) for layout of pdf file and put following code:
+
+resources/views/emails/myTestMail.blade.php
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title> Northern City </title>
+</head>
+<body>
+    <h1>{{ $title }}</h1>
+    <p>{{ $body }}</p>
+     
+    <p>Thank you</p>
+</body>
+</html>
+
+
+==============================
+
+
+Run Project:
+
+php artisan serve
+
+email Route:
+
+localhost:8000/send-email-pdf
+
